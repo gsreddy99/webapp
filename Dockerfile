@@ -1,23 +1,24 @@
-# Runtime image (AMD64)
-FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:8.0 AS base
+# Runtime image
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 80
 
-# Build image (AMD64)
-FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:8.0 AS build
+# Build image
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy only the project file first
 COPY EmbeddedServerApp/EmbeddedServerApp.csproj EmbeddedServerApp/
 RUN dotnet restore EmbeddedServerApp/EmbeddedServerApp.csproj
 
-# Copy the rest of the project
 COPY EmbeddedServerApp/ EmbeddedServerApp/
 
-# Publish
-RUN dotnet publish EmbeddedServerApp/EmbeddedServerApp.csproj -c Release -o /app/publish
+RUN dotnet publish EmbeddedServerApp/EmbeddedServerApp.csproj \
+    -c Release \
+    -o /app/publish \
+    -r linux-x64 \
+    --self-contained false
 
-# Final runtime image
+# Final image
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
