@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: embeddedserverapp
-        image: <YOUR_ACR_NAME>.azurecr.io/embeddedserverapp:latest
+        image: srinivasacr.azurecr.io/embeddedserverapp:latest
         ports:
         - containerPort: 80
         env:

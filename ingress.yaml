@@ -6,7 +6,7 @@ metadata:
     kubernetes.io/ingress.class: azure/application-gateway
 spec:
   rules:
-  - host: <YOUR_CUSTOM_DOMAIN>
+  - host: 123.45.67.89.nip.io
     http:
       paths:
       - path: /
