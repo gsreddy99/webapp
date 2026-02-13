@@ -1,10 +1,10 @@
-# Force the runtime image to AMD64
-FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/aspnet:10.0 AS base
+# Runtime image (AMD64)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
 WORKDIR /app
 EXPOSE 80
 
-# Force the SDK build image to AMD64
-FROM --platform=linux/amd64 mcr.microsoft.com/dotnet/sdk:10.0 AS build
+# Build image (AMD64)
+FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
 # Copy csproj and restore
