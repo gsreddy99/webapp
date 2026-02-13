@@ -1,13 +1,4 @@
-# -------------------------
-# Base runtime image
-# -------------------------
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS base
-WORKDIR /app
-EXPOSE 80
-
-# -------------------------
-# Build image
-# -------------------------
+# Base SDK image (multi-arch)
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
@@ -15,23 +6,15 @@ WORKDIR /src
 COPY EmbeddedServerApp/EmbeddedServerApp.csproj EmbeddedServerApp/
 RUN dotnet restore EmbeddedServerApp/EmbeddedServerApp.csproj
 
-# Copy the full source
+# Copy full source and publish
 COPY EmbeddedServerApp/ EmbeddedServerApp/
-
-# Build and publish as portable, platform-neutral
 RUN dotnet publish EmbeddedServerApp/EmbeddedServerApp.csproj \
-    -c Release \
-    -o /app/publish
+    -c Release -o /app/publish
 
-# -------------------------
-# Final image
-# -------------------------
-FROM base AS final
+# Runtime image (multi-arch)
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
 WORKDIR /app
+COPY --from=build /app/publish ./
 
-# Copy published files from build stage
-COPY --from=build /app/publish .
-COPY EmbeddedServerApp/public ./public
-
-# Entry point
+EXPOSE 80
 ENTRYPOINT ["dotnet", "EmbeddedServerApp.dll"]
