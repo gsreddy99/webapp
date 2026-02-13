@@ -1,0 +1,22 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: embeddedserverapp-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: embeddedserverapp
+  template:
+    metadata:
+      labels:
+        app: embeddedserverapp
+    spec:
+      containers:
+      - name: embeddedserverapp
+        image: <YOUR_ACR_NAME>.azurecr.io/embeddedserverapp:latest
+        ports:
+        - containerPort: 80
+        env:
+        - name: ASPNETCORE_ENVIRONMENT
+          value: "Production"

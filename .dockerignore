@@ -1,0 +1,11 @@
+# .dockerignore
+bin/
+obj/
+*.md
+*.user
+*.vspscc
+.vs/
+Dockerfile
+**/.vscode/
+**/.git/
+**/node_modules/
