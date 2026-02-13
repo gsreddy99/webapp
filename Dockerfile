@@ -7,17 +7,19 @@ EXPOSE 80
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore
+# Copy only the project file first
 COPY EmbeddedServerApp/EmbeddedServerApp.csproj EmbeddedServerApp/
 RUN dotnet restore EmbeddedServerApp/EmbeddedServerApp.csproj
 
-# Copy everything and publish
-COPY . .
-WORKDIR /src/EmbeddedServerApp
-RUN dotnet publish -c Release -o /app/publish
+# Copy the rest of the project
+COPY EmbeddedServerApp/ EmbeddedServerApp/
+
+# Publish
+RUN dotnet publish EmbeddedServerApp/EmbeddedServerApp.csproj -c Release -o /app/publish
 
 # Final runtime image
 FROM base AS final
 WORKDIR /app
 COPY --from=build /app/publish .
+COPY EmbeddedServerApp/public ./public
 ENTRYPOINT ["dotnet", "EmbeddedServerApp.dll"]

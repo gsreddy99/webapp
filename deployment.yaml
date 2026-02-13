@@ -2,7 +2,9 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: embeddedserverapp-deployment
-  namespace: embeddedserverapp   # ✅ specify namespace explicitly
+  namespace: embeddedserverapp
+  annotations:
+    redeploy-timestamp: "2026-02-12-21-20"   # forces new ReplicaSet
 spec:
   replicas: 1
   selector:
@@ -21,6 +23,12 @@ spec:
         env:
         - name: ASPNETCORE_ENVIRONMENT
           value: "Production"
-      # Optional: only needed if you didn't attach ACR to AKS
-      # imagePullSecrets:
-      # - name: acr-secret
+        resources:
+          requests:
+            cpu: "100m"
+            memory: "128Mi"
+          limits:
+            cpu: "500m"
+            memory: "512Mi"
+        imagePullPolicy: Always
+      restartPolicy: Always
