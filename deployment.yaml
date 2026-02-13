@@ -2,6 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: embeddedserverapp-deployment
+  namespace: embeddedserverapp   # ✅ specify namespace explicitly
 spec:
   replicas: 1
   selector:
@@ -20,3 +21,6 @@ spec:
         env:
         - name: ASPNETCORE_ENVIRONMENT
           value: "Production"
+      # Optional: only needed if you didn't attach ACR to AKS
+      # imagePullSecrets:
+      # - name: acr-secret
