@@ -4,7 +4,7 @@ metadata:
   name: embeddedserverapp-deployment
   namespace: embeddedserverapp
   annotations:
-    redeploy-timestamp: "2026-02-12-21-20"   # forces new ReplicaSet
+    redeploy-timestamp: "2026-02-13-16-45"   # bump this to force rollout if needed
 spec:
   replicas: 1
   selector:
@@ -16,19 +16,19 @@ spec:
         app: embeddedserverapp
     spec:
       containers:
-      - name: embeddedserverapp
-        image: srinivasacr.azurecr.io/embeddedserverapp@sha256:29a843c5c138d5838eb374be2a5ec1e3a42aa99f7db524c1a153800716a68d77
-        ports:
-        - containerPort: 80
-        env:
-        - name: ASPNETCORE_ENVIRONMENT
-          value: "Production"
-        resources:
-          requests:
-            cpu: "100m"
-            memory: "128Mi"
-          limits:
-            cpu: "500m"
-            memory: "512Mi"
-        imagePullPolicy: Always
+        - name: embeddedserverapp
+          image: srinivasacr.azurecr.io/embeddedserverapp:latest
+          imagePullPolicy: Always
+          ports:
+            - containerPort: 80
+          env:
+            - name: ASPNETCORE_ENVIRONMENT
+              value: "Production"
+          resources:
+            requests:
+              cpu: "100m"
+              memory: "128Mi"
+            limits:
+              cpu: "500m"
+              memory: "512Mi"
       restartPolicy: Always
