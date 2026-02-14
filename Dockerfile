@@ -1,20 +1,30 @@
-# Base SDK image (multi-arch)
+# ---------- Build stage ----------
 FROM mcr.microsoft.com/dotnet/sdk:8.0 AS build
 WORKDIR /src
 
-# Copy csproj and restore dependencies
+# Copy csproj and restore
 COPY EmbeddedServerApp/EmbeddedServerApp.csproj EmbeddedServerApp/
 RUN dotnet restore EmbeddedServerApp/EmbeddedServerApp.csproj
 
-# Copy full source and publish
+# Copy source code
 COPY EmbeddedServerApp/ EmbeddedServerApp/
-RUN dotnet publish EmbeddedServerApp/EmbeddedServerApp.csproj \
-    -c Release -o /app/publish
 
-# Runtime image (multi-arch)
-FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS runtime
+# Ensure public folder is copied explicitly
+COPY EmbeddedServerApp/public EmbeddedServerApp/public
+
+WORKDIR /src/EmbeddedServerApp
+
+# Publish (includes public/)
+RUN dotnet publish -c Release -o /publish --no-restore
+
+# ---------- Runtime stage ----------
+FROM mcr.microsoft.com/dotnet/aspnet:8.0 AS final
 WORKDIR /app
-COPY --from=build /app/publish ./
+
+# Copy published output
+COPY --from=build /publish .
 
 EXPOSE 80
+ENV ASPNETCORE_URLS=http://+:80
+
 ENTRYPOINT ["dotnet", "EmbeddedServerApp.dll"]
