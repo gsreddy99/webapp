@@ -1,23 +1,23 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: embeddedserverapp-deployment
-  namespace: embeddedserverapp
+  name: webapp-deployment
+  namespace: webapp
   annotations:
     redeploy-timestamp: "2026-02-13-16-45"   # bump this to force rollout if needed
 spec:
   replicas: 1
   selector:
     matchLabels:
-      app: embeddedserverapp
+      app: webapp
   template:
     metadata:
       labels:
-        app: embeddedserverapp
+        app: webapp
     spec:
       containers:
-        - name: embeddedserverapp
-          image: srinivasacr.azurecr.io/embeddedserverapp:latest
+        - name: webapp
+          image: srinivasacr.azurecr.io/webapp:latest
           imagePullPolicy: Always
           ports:
             - containerPort: 80
