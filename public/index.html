@@ -4,37 +4,62 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Calculator</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        input, select, button { margin: 5px; padding: 5px; }
+        #result { margin-top: 15px; font-weight: bold; }
+    </style>
 </head>
 <body>
-    <h1>Calculator</h1>
-    <form id="calc-form">
-        <input type="number" id="num1" placeholder="First number" required>
-        <select id="operation">
-            <option value="add">+</option>
-            <option value="subtract">-</option>
-            <option value="multiply">*</option>
-            <option value="divide">/</option>
-        </select>
-        <input type="number" id="num2" placeholder="Second number" required>
-        <button type="submit">Calculate</button>
-    </form>
-    <div id="result"></div>
-    <script>
-        document.getElementById('calc-form').addEventListener('submit', async function(e) {
-            e.preventDefault();
+<h1>Calculator</h1>
+<form id="calc-form">
+    <input type="number" id="num1" placeholder="First number" required>
+    <select id="operation">
+        <option value="add">+</option>
+        <option value="subtract">-</option>
+        <option value="multiply">*</option>
+        <option value="divide">/</option>
+    </select>
+    <input type="number" id="num2" placeholder="Second number" required>
+    <button type="submit">Calculate</button>
+</form>
+<div id="result"></div>
+
+<script>
+    class CalculatorUI {
+        constructor(formId, resultId) {
+            this.form = document.getElementById(formId);
+            this.resultDiv = document.getElementById(resultId);
+            this.attachEvents();
+        }
+
+        attachEvents() {
+            this.form.addEventListener('submit', (e) => this.handleSubmit(e));
+        }
+
+        async handleSubmit(event) {
+            event.preventDefault();
             const a = document.getElementById('num1').value;
             const b = document.getElementById('num2').value;
             const op = document.getElementById('operation').value;
-            const resDiv = document.getElementById('result');
-            resDiv.textContent = 'Calculating...';
+            this.showResult('Calculating...');
             try {
-                const resp = await fetch(`/api/calculate?a=${a}&b=${b}&op=${op}`);
-                const data = await resp.json();
-                resDiv.textContent = `Result: ${data.result}`;
-            } catch {
-                resDiv.textContent = 'Error calculating.';
+                const response = await fetch(`/api/calculate?a=${a}&b=${b}&op=${op}`);
+                const data = await response.json();
+                this.showResult(`Result: ${data.result}`);
+            } catch (error) {
+                this.showResult('Error calculating.');
+                console.error(error);
             }
-        });
-    </script>
+        }
+
+        showResult(message) {
+            this.resultDiv.textContent = message;
+        }
+    }
+
+    // Initialize the Calculator UI
+    new CalculatorUI('calc-form', 'result');
+</script>
 </body>
 </html>

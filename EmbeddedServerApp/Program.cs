@@ -1,33 +1,73 @@
+using System;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
+using EmbeddedServerApp.Models;
 
-var builder = WebApplication.CreateBuilder(args);
-var app = builder.Build();
-
-// Serve static files from the "public" directory inside the container
-app.UseStaticFiles(new StaticFileOptions
+namespace EmbeddedServerApp
 {
-    FileProvider = new PhysicalFileProvider(
-        Path.Combine(Directory.GetCurrentDirectory(), "public")
-    ),
-    RequestPath = ""
-});
-
-// REST API endpoint
-app.MapGet("/api/hello", () => "Hello World");
-
-// Calculator API endpoint
-app.MapGet("/api/calculate", (double a, double b, string op) =>
-{
-    double result = op switch
+    public class Program
     {
-        "add" => EmbeddedServerApp.Models.Calculator.Add(a, b),
-        "subtract" => EmbeddedServerApp.Models.Calculator.Subtract(a, b),
-        "multiply" => EmbeddedServerApp.Models.Calculator.Multiply(a, b),
-        "divide" => EmbeddedServerApp.Models.Calculator.Divide(a, b),
-        _ => double.NaN
-    };
+        public static void Main(string[] args)
+        {
+            var builder = WebApplication.CreateBuilder(args);
 
-    return Results.Json(new { result });
-});
+            // Register services if needed
+            ConfigureServices(builder.Services);
 
-app.Run();
+            var app = builder.Build();
+
+            // Configure middleware
+            Configure(app);
+
+            // Run the application
+            app.Run();
+        }
+
+        private static void ConfigureServices(IServiceCollection services)
+        {
+            // Add services here if needed (e.g., controllers, DI)
+        }
+
+        private static void Configure(WebApplication app)
+        {
+            // Serve static files from "public" folder
+            app.UseStaticFiles(new StaticFileOptions
+            {
+                FileProvider = new PhysicalFileProvider(
+                    Path.Combine(Directory.GetCurrentDirectory(), "public")
+                ),
+                RequestPath = ""
+            });
+
+            // Map API endpoints
+            MapEndpoints(app);
+        }
+
+        private static void MapEndpoints(WebApplication app)
+        {
+            // Simple hello endpoint
+            app.MapGet("/api/hello", Hello);
+
+            // Calculator endpoint
+            app.MapGet("/api/calculate", Calculate);
+        }
+
+        // Methods for endpoints
+        private static string Hello() => "Hello World";
+
+        private static IResult Calculate(double a, double b, string op)
+        {
+            double result = op switch
+            {
+                "add" => Calculator.Add(a, b),
+                "subtract" => Calculator.Subtract(a, b),
+                "multiply" => Calculator.Multiply(a, b),
+                "divide" => Calculator.Divide(a, b),
+                _ => double.NaN
+            };
+
+            return Results.Json(new { result });
+        }
+    }
+}
