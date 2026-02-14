@@ -1,12 +1,12 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: embeddedserverapp-service
-  namespace: embeddedserverapp
+  name: webapp-service
+  namespace: webapp
 spec:
   type: LoadBalancer
   selector:
-    app: embeddedserverapp
+    app: webapp
   ports:
     - port: 80
       targetPort: 8080

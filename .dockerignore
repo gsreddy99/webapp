@@ -5,7 +5,7 @@ obj/
 *.user
 *.vspscc
 .vs/
-Dockerfile
+calculator-web/docker/Dockerfile
 **/.vscode/
 **/.git/
 **/node_modules/

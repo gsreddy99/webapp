@@ -1,5 +1,8 @@
 /.idea/
 /.DS_Store/
 .DS_Store
-/EmbeddedServerApp/bin/
-/EmbeddedServerApp/obj/
+/calculator-web/bin/
+/calculator-web/obj/
+/calculator-web/publish/
+/calculator-web/src/bin/
+/calculator-web/src/obj/

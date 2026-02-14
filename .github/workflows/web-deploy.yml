@@ -8,10 +8,10 @@ on:
 
 env:
   REGISTRY: ${{ secrets.ACR_LOGIN_SERVER }}
-  IMAGE_NAME: embeddedserverapp
+  IMAGE_NAME: webapp
   AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-  NAMESPACE: embeddedserverapp
+  NAMESPACE: webapp
 
 jobs:
   build-and-push:
@@ -21,7 +21,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # REQUIRED for multi-arch
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
 
@@ -40,7 +39,9 @@ jobs:
           docker buildx build \
             --platform linux/amd64,linux/arm64 \
             -t $REGISTRY/$IMAGE_NAME:latest \
-            --push .
+            -f calculator-web/docker/Dockerfile \
+            calculator-web \
+            --push
 
   deploy-to-aks:
     needs: build-and-push
@@ -68,10 +69,10 @@ jobs:
 
       - name: Deploy manifests
         run: |
-          kubectl apply -n $NAMESPACE -f deployment.yaml
-          kubectl apply -n $NAMESPACE -f service.yaml
-          kubectl apply -n $NAMESPACE -f ingress.yaml
+          kubectl apply -n $NAMESPACE -f calculator-web/k8s/deployment.yaml
+          kubectl apply -n $NAMESPACE -f calculator-web/k8s/service.yaml
+          kubectl apply -n $NAMESPACE -f calculator-web/k8s/ingress.yaml
 
       - name: Restart deployment to pull new image
         run: |
-          kubectl rollout restart deployment embeddedserverapp-deployment -n $NAMESPACE
+          kubectl rollout restart deployment webapp-deployment -n $NAMESPACE
