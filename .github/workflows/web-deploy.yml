@@ -8,7 +8,6 @@ on:
 
 env:
   REGISTRY: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-  REGISTRY_NAME: ${{ secrets.REGISTRY_NAME }}
   IMAGE_NAME: webapp
   AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
   AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
@@ -30,7 +29,7 @@ jobs:
 
       # Login to ACR using Azure identity (no username/password needed)
       - name: Login to ACR
-        run: az acr login --name $REGISTRY_NAME
+        run: az acr login --name srinivasacr
 
       - name: Set up QEMU
         uses: docker/setup-qemu-action@v3
@@ -69,14 +68,4 @@ jobs:
       - name: Create namespace (idempotent)
         run: |
           kubectl create namespace $NAMESPACE \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Deploy manifests
-        run: |
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/deployment.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/service.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/ingress.yaml
-
-      - name: Restart deployment to pull new image
-        run: |
-          kubectl rollout restart deployment webapp-deployment -n $NAMESPACE
+            --dry-run=client
