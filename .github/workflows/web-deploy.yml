@@ -22,11 +22,13 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
+      # Login to Azure using your service principal
       - name: Azure Login
         uses: azure/login@v2
         with:
           creds: ${{ secrets.AZURE_CREDENTIALS }}
 
+      # Login to ACR using Azure identity (no username/password needed)
       - name: Login to ACR
         run: az acr login --name $REGISTRY_NAME
 
