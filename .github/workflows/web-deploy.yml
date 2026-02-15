@@ -74,7 +74,7 @@ jobs:
       - name: Deploy manifests
         run: |
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/deployment.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/service.yaml
+          kubectl apply -n $NAMESPACE -f calculator-web/k8s/service-new.yaml
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/ingress.yaml
 
       - name: Restart deployment to pull new image
