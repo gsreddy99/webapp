@@ -17,7 +17,7 @@ spec:
     spec:
       containers:
         - name: webapp
-          image: srinivasacr.azurecr.io/webapp:latest
+          image: srinivasacr.azurecr.io/webapp:v3
           imagePullPolicy: Always
           ports:
             - containerPort: 80
