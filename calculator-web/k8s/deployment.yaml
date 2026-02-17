@@ -24,6 +24,8 @@ spec:
           env:
             - name: ASPNETCORE_ENVIRONMENT
               value: "Production"
+            - name: KEYVAULT_URL
+              value: "https://srinivas-kv-01.vault.azure.net/"
           resources:
             requests:
               cpu: "100m"

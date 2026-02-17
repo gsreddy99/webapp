@@ -1,7 +1,10 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.FileProviders;
-using CalculatorWeb.Models;
+using Azure.Identity;
+using Azure.Security.KeyVault.Secrets;
+using System.Net.Http;
+using System.Text.Json;
 using System.IO;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -9,6 +12,21 @@ var builder = WebApplication.CreateBuilder(args);
 // Add Swagger services
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
+
+// 1. Read API key from Key Vault at startup
+var kvUrl = builder.Configuration["KEYVAULT_URL"];
+var secretClient = new SecretClient(new Uri(kvUrl), new DefaultAzureCredential());
+var apiKey = (await secretClient.GetSecretAsync("WebAppApiKey")).Value.Value;
+
+// 2. Register HttpClient and attach API key header
+builder.Services.AddHttpClient("webapi", client =>
+{
+    // External call (your current setup)
+    client.BaseAddress = new Uri("http://20.112.206.23:81");
+
+    // Add API key header for every request
+    client.DefaultRequestHeaders.Add("x-api-key", apiKey);
+});
 
 var app = builder.Build();
 
@@ -28,19 +46,31 @@ app.UseStaticFiles(new StaticFileOptions
 // Simple hello endpoint
 app.MapGet("/api/hello", () => "Hello World");
 
-// Calculator endpoint
-app.MapGet("/api/calculate", (double a, double b, string op) =>
+// Calculator endpoint (calls webapi)
+app.MapGet("/api/calculate", async (
+    double a,
+    double b,
+    string op,
+    IHttpClientFactory httpClientFactory) =>
 {
-    double result = op switch
-    {
-        "add" => Calculator.Add(a, b),
-        "subtract" => Calculator.Subtract(a, b),
-        "multiply" => Calculator.Multiply(a, b),
-        "divide" => Calculator.Divide(a, b),
-        _ => double.NaN
-    };
+    var client = httpClientFactory.CreateClient("webapi");
 
-    return Results.Json(new { result });
+    var url = $"/api/calc?a={a}&b={b}&op={op}";
+    var response = await client.GetAsync(url);
+
+    if (!response.IsSuccessStatusCode)
+    {
+        return Results.BadRequest(new
+        {
+            error = "webapi returned an error",
+            status = (int)response.StatusCode
+        });
+    }
+
+    var json = await response.Content.ReadAsStringAsync();
+    var result = JsonSerializer.Deserialize<JsonElement>(json);
+
+    return Results.Json(result);
 });
 
 app.Run();
