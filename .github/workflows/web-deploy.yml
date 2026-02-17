@@ -76,7 +76,6 @@ jobs:
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/deployment.yaml
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/service-new.yaml
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/ingress.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/hpa.yaml
           kubectl apply -n $NAMESPACE -f calculator-web/k8s/serviceaccount.yaml
 
       - name: Restart deployment to pull new image
