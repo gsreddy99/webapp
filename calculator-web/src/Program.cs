@@ -21,8 +21,8 @@ var apiKey = (await secretClient.GetSecretAsync("WebAppApiKey")).Value.Value;
 // 2. Register HttpClient and attach API key header
 builder.Services.AddHttpClient("webapi", client =>
 {
-    // External call (your current setup)
-    client.BaseAddress = new Uri("http://20.112.206.23:81");
+    // IMPORTANT: Use your new WebAPI public IP
+    client.BaseAddress = new Uri("http://172.212.180.93");
 
     // Add API key header for every request
     client.DefaultRequestHeaders.Add("x-api-key", apiKey);

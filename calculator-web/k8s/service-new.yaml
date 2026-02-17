@@ -3,9 +3,12 @@ kind: Service
 metadata:
   name: webapp-service-new
   namespace: webapp
+  annotations:
+    service.beta.kubernetes.io/azure-load-balancer-resource-group: MC_my-aks-cluster_group_my-aks-cluster_centralus
+    service.beta.kubernetes.io/azure-pip-name: webapp-ip2
 spec:
   type: LoadBalancer
-  loadBalancerIP: 20.9.90.119
+  loadBalancerIP: 104.43.252.2
   selector:
     app: webapp
   ports:
