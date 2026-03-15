@@ -2,16 +2,9 @@ import os
 from pathlib import Path
 from openai import OpenAI
 
-# ---------------------------------------------------------
-# OpenAI Client (uses your account-level OPENAI_API_KEY)
-# ---------------------------------------------------------
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
+MODEL = "gpt-4o-mini"
 
-MODEL = "gpt-4o-mini"   # Fast, cheap, perfect for Playwright test generation
-
-# ---------------------------------------------------------
-# Read HTML files
-# ---------------------------------------------------------
 def read_file(path):
     try:
         return Path(path).read_text(encoding="utf-8")
@@ -21,9 +14,6 @@ def read_file(path):
 signin_html = read_file("public/signin.html")
 store_html = read_file("public/store.html")
 
-# ---------------------------------------------------------
-# Prompt for generating Playwright tests
-# ---------------------------------------------------------
 prompt = f"""
 You are an expert QA engineer. Generate Playwright functional tests
 for the following HTML pages. Use stable selectors and cover:
@@ -45,9 +35,6 @@ Return ONLY valid JavaScript code for Playwright.
 {store_html}
 """
 
-# ---------------------------------------------------------
-# Call OpenAI
-# ---------------------------------------------------------
 response = client.chat.completions.create(
     model=MODEL,
     messages=[
@@ -59,14 +46,7 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# ---------------------------------------------------------
-# Ensure output folder exists
-# ---------------------------------------------------------
 Path("tests").mkdir(exist_ok=True)
-
-# ---------------------------------------------------------
-# Write generated Playwright tests
-# ---------------------------------------------------------
 output_path = Path("tests/generated.spec.js")
 output_path.write_text(generated_code, encoding="utf-8")
 
