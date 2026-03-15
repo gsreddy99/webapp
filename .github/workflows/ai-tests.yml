@@ -1,11 +1,11 @@
-name: AI Functional Test Pipeline
+name: Playwright Tests
 
 on:
   push:
   pull_request:
 
 jobs:
-  ai-tests:
+  test:
     runs-on: ubuntu-latest
 
     steps:
@@ -15,25 +15,14 @@ jobs:
       - name: Setup Node
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 18
 
-      - name: Install Node dependencies
+      - name: Install dependencies
         run: |
           cd calculator-web/src
           npm install
 
-      - name: Install Python dependencies
-        run: pip install openai requests
-
-      - name: Generate AI Playwright tests (OpenAI)
-        env:
-          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
-        run: |
-          cd calculator-web/src
-          echo "OPENAI_API_KEY is set? -> ${OPENAI_API_KEY:+YES}"   # debug
-          python3 ai-generate-tests.py
-
-      - name: Install Playwright browsers
+      - name: Install Playwright Browsers
         run: |
           cd calculator-web/src
           npx playwright install --with-deps
@@ -43,7 +32,14 @@ jobs:
           cd calculator-web/src
           nohup npm run serve &
 
-      - name: Run Playwright tests
+      - name: Generate AI Tests
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd calculator-web/src
+          python3 ai-generate-tests.py
+
+      - name: Run Playwright Tests
         run: |
           cd calculator-web/src
           npx playwright test
