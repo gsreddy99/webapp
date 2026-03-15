@@ -27,12 +27,8 @@ for the following HTML pages. Use stable selectors and cover:
 - Success flows
 
 Return ONLY valid JavaScript code for Playwright.
-
---- signin.html ---
-{signin_html}
-
---- store.html ---
-{store_html}
+Do NOT include markdown fences like ```javascript or ```.
+Just return pure JS.
 """
 
 response = client.chat.completions.create(
@@ -45,6 +41,11 @@ response = client.chat.completions.create(
 )
 
 generated_code = response.choices[0].message.content
+
+# Strip markdown fences if model still adds them
+generated_code = generated_code.replace("```javascript", "")
+generated_code = generated_code.replace("```js", "")
+generated_code = generated_code.replace("```", "").strip()
 
 Path("tests").mkdir(exist_ok=True)
 output_path = Path("tests/generated.spec.js")
