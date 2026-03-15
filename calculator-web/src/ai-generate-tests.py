@@ -11,7 +11,7 @@ def read_file(path):
     except FileNotFoundError:
         return ""
 
-prompt = f"""
+prompt = """
 You are an expert QA engineer. Generate Playwright functional tests for the following pages.
 Use ONLY selectors that exist in the HTML/JS described below.
 
@@ -49,7 +49,6 @@ REQUIREMENTS:
 - NEVER use toHaveCountGreaterThan or any matcher that does not exist in Playwright.
 """
 
-
 response = client.chat.completions.create(
     model=MODEL,
     messages=[
@@ -73,8 +72,10 @@ IMPORT_LINE = "const { test, expect } = require('@playwright/test');"
 if not generated_code.startswith("const { test"):
     generated_code = IMPORT_LINE + "\n\n" + generated_code
 
-# Write output
+# Ensure tests directory exists
 Path("tests").mkdir(exist_ok=True)
+
+# Write final test file
 output_path = Path("tests/generated.spec.js")
 output_path.write_text(generated_code, encoding="utf-8")
 
