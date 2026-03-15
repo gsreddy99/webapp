@@ -11,7 +11,7 @@ def read_file(path):
     except FileNotFoundError:
         return ""
 
-prompt = """
+prompt = f"""
 You are an expert QA engineer. Generate Playwright functional tests for the following pages.
 Use ONLY selectors that exist in the HTML/JS described below.
 
@@ -45,7 +45,10 @@ REQUIREMENTS:
 - Use test.describe and test blocks.
 - Use page.goto('/signin.html') and page.goto('/store.html').
 - Use stable selectors based on the structure above.
+- For item count, ALWAYS use: await expect(items).toHaveCount(2);
+- NEVER use toHaveCountGreaterThan or any matcher that does not exist in Playwright.
 """
+
 
 response = client.chat.completions.create(
     model=MODEL,
