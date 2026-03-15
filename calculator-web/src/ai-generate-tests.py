@@ -1,41 +1,33 @@
 import os
-import json
-from openai import OpenAI
+from pathlib import Path
+from openai import AzureOpenAI
 
-# ------------------------------------------------------------
-# Load Azure OpenAI configuration from environment variables
-# ------------------------------------------------------------
-AOAI_ENDPOINT = os.getenv("AOAI_ENDPOINT")
-AOAI_KEY = os.getenv("AOAI_KEY")
-AOAI_DEPLOYMENT = os.getenv("AOAI_DEPLOYMENT")
-
-if not AOAI_ENDPOINT or not AOAI_ENDPOINT.startswith("https://"):
-    raise ValueError("AOAI_ENDPOINT must start with https:// and end with /")
-
-# ------------------------------------------------------------
-# Initialize Azure OpenAI client
-# ------------------------------------------------------------
-client = OpenAI(
-    api_key=AOAI_KEY,
-    base_url=AOAI_ENDPOINT
+# ---------------------------------------------------------
+# Azure OpenAI Client (same as your working app)
+# ---------------------------------------------------------
+client = AzureOpenAI(
+    api_key=os.environ["AOAI_KEY"],
+    azure_endpoint=os.environ["AOAI_ENDPOINT"],
+    api_version="2024-12-01-preview"
 )
 
-# ------------------------------------------------------------
-# Read HTML files to give the model context
-# ------------------------------------------------------------
+deployment = os.environ["AOAI_DEPLOYMENT"]
+
+# ---------------------------------------------------------
+# Read HTML files
+# ---------------------------------------------------------
 def read_file(path):
     try:
-        with open(path, "r", encoding="utf-8") as f:
-            return f.read()
+        return Path(path).read_text(encoding="utf-8")
     except FileNotFoundError:
         return ""
 
 signin_html = read_file("public/signin.html")
 store_html = read_file("public/store.html")
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 # Prompt for generating Playwright tests
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 prompt = f"""
 You are an expert QA engineer. Generate Playwright functional tests
 for the following HTML pages. Use stable selectors and cover:
@@ -57,11 +49,11 @@ Return ONLY valid JavaScript code for Playwright.
 {store_html}
 """
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 # Call Azure OpenAI
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 response = client.chat.completions.create(
-    model=AOAI_DEPLOYMENT,
+    model=deployment,
     messages=[
         {"role": "system", "content": "You generate high-quality Playwright tests."},
         {"role": "user", "content": prompt}
@@ -71,16 +63,15 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 # Ensure output folder exists
-# ------------------------------------------------------------
-os.makedirs("tests", exist_ok=True)
+# ---------------------------------------------------------
+Path("tests").mkdir(exist_ok=True)
 
-# ------------------------------------------------------------
+# ---------------------------------------------------------
 # Write generated Playwright tests
-# ------------------------------------------------------------
-output_path = "tests/generated.spec.js"
-with open(output_path, "w", encoding="utf-8") as f:
-    f.write(generated_code)
+# ---------------------------------------------------------
+output_path = Path("tests/generated.spec.js")
+output_path.write_text(generated_code, encoding="utf-8")
 
 print(f"AI-generated Playwright tests written to: {output_path}")
