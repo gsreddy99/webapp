@@ -1,15 +1,13 @@
 import os
-import json
 from pathlib import Path
-import requests
+from openai import OpenAI
 
 # ---------------------------------------------------------
-# GitHub Models API endpoint
+# OpenAI Client (uses your account-level OPENAI_API_KEY)
 # ---------------------------------------------------------
-API_URL = "https://models.inference.ai.azure.com/chat/completions"
-MODEL = "gpt-4o-mini"
+client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 
-GITHUB_TOKEN = os.environ["GITHUB_TOKEN"]
+MODEL = "gpt-4o-mini"   # Fast, cheap, perfect for Playwright test generation
 
 # ---------------------------------------------------------
 # Read HTML files
@@ -48,30 +46,18 @@ Return ONLY valid JavaScript code for Playwright.
 """
 
 # ---------------------------------------------------------
-# Call GitHub Models using raw HTTP
+# Call OpenAI
 # ---------------------------------------------------------
-headers = {
-    "Authorization": f"Bearer {GITHUB_TOKEN}",
-    "Content-Type": "application/json"
-}
-
-payload = {
-    "model": MODEL,
-    "messages": [
+response = client.chat.completions.create(
+    model=MODEL,
+    messages=[
         {"role": "system", "content": "You generate high-quality Playwright tests."},
         {"role": "user", "content": prompt}
     ],
-    "temperature": 0.2
-}
+    temperature=0.2
+)
 
-response = requests.post(API_URL, headers=headers, json=payload)
-
-if response.status_code != 200:
-    print("ERROR calling GitHub Models:")
-    print(response.text)
-    raise SystemExit(1)
-
-generated_code = response.json()["choices"][0]["message"]["content"]
+generated_code = response.choices[0].message.content
 
 # ---------------------------------------------------------
 # Ensure output folder exists
