@@ -1,0 +1,22 @@
+{
+  "name": "calculator-web",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "commonjs",
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/jest": "^30.0.0",
+    "http-server": "^14.1.1",
+    "jest": "^30.3.0",
+    "jest-environment-jsdom": "^30.3.0"
+  },
+  "scripts": {
+    "serve": "http-server ./public -p 3000 -a localhost",
+    "test": "playwright test",
+    "test:unit": "jest",
+    "ai-tests": "python3 ai-generate-tests.py"
+  }
+}

@@ -1,4 +1,4 @@
-name: Build and Deploy to AKS
+name: Build WebApp (No Deploy)
 
 on:
   push:
@@ -6,78 +6,44 @@ on:
       - '**'
   workflow_dispatch:
 
-env:
-  REGISTRY: ${{ secrets.REGISTRY_LOGIN_SERVER }}
-  IMAGE_NAME: webapp
-  AKS_RESOURCE_GROUP: ${{ secrets.AKS_RESOURCE_GROUP }}
-  AKS_CLUSTER_NAME: ${{ secrets.AKS_CLUSTER_NAME }}
-  NAMESPACE: webapp
-
 jobs:
-  build-and-push:
+  build:
     runs-on: ubuntu-latest
 
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
-      - name: Azure Login
-        uses: azure/login@v2
+      # ---------------------------------------------------------
+      # .NET Build + Unit Tests
+      # ---------------------------------------------------------
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v4
         with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          dotnet-version: '8.0.x'
 
-      - name: Login to ACR
-        run: az acr login --name srinivasacr
+      - name: Restore dependencies
+        run: dotnet restore calculator-web
 
-      - name: Debug registry var
-        run: echo "REGISTRY = $REGISTRY"
+      - name: Build solution
+        run: dotnet build calculator-web --configuration Release --no-restore
 
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v3
+      - name: Run unit tests
+        run: dotnet test calculator-web --configuration Release --no-build --verbosity normal
 
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-
-      - name: Build and push Docker image (amd64 + arm64)
-        run: |
-          docker buildx build \
-            --platform linux/amd64,linux/arm64 \
-            -t $REGISTRY/$IMAGE_NAME:v3 \
-            -f calculator-web/docker/Dockerfile \
-            calculator-web \
-            --push
-
-  deploy-to-aks:
-    needs: build-and-push
-    runs-on: ubuntu-latest
-
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v4
-
-      - name: Azure Login
-        uses: azure/login@v2
-        with:
-          creds: ${{ secrets.AZURE_CREDENTIALS }}
-
-      - name: Set AKS context
-        uses: azure/aks-set-context@v3
-        with:
-          resource-group: ${{ env.AKS_RESOURCE_GROUP }}
-          cluster-name: ${{ env.AKS_CLUSTER_NAME }}
-
-      - name: Create namespace (idempotent)
-        run: |
-          kubectl create namespace $NAMESPACE \
-            --dry-run=client -o yaml | kubectl apply -f -
-
-      - name: Deploy manifests
-        run: |
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/deployment.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/service-new.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/ingress.yaml
-          kubectl apply -n $NAMESPACE -f calculator-web/k8s/serviceaccount.yaml
-
-      - name: Restart deployment to pull new image
-        run: |
-          kubectl rollout restart deployment webapp-deployment -n $NAMESPACE
+      # ---------------------------------------------------------
+      # OPTIONAL: Local Docker build (no push)
+      # ---------------------------------------------------------
+      # - name: Set up QEMU
+      #   uses: docker/setup-qemu-action@v3
+      #
+      # - name: Set up Docker Buildx
+      #   uses: docker/setup-buildx-action@v3
+      #
+      # - name: Build Docker image locally (no push)
+      #   run: |
+      #     docker buildx build \
+      #       --platform linux/amd64 \
+      #       -t webapp:test \
+      #       -f calculator-web/docker/Dockerfile \
+      #       calculator-web

@@ -1,0 +1,50 @@
+name: AI Functional Test Pipeline
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  ai-tests:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install Node dependencies
+        run: |
+          cd calculator-web/src
+          npm install
+
+      - name: Install Python dependencies
+        run: pip install openai requests
+
+      - name: Generate AI Playwright tests
+        env:
+          AOAI_KEY: ${{ secrets.AOAI_KEY }}
+          AOAI_ENDPOINT: ${{ secrets.AOAI_ENDPOINT }}
+          AOAI_DEPLOYMENT: ${{ secrets.AOAI_DEPLOYMENT }}
+        run: |
+          cd calculator-web/src
+          python3 ai-generate-tests.py
+
+      - name: Install Playwright browsers
+        run: |
+          cd calculator-web/src
+          npx playwright install --with-deps
+
+      - name: Start server
+        run: |
+          cd calculator-web/src
+          nohup npm run serve &
+
+      - name: Run Playwright tests
+        run: |
+          cd calculator-web/src
+          npx playwright test

@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Store Items</title>
+    <link rel="stylesheet" href="shared.css">
+</head>
+<body>
+
+<h1>Store Items</h1>
+
+<div id="items-container">
+    <div>
+        <h3>First Item</h3>
+        <input type="number" value="10.99">
+        <button>Update</button>
+    </div>
+
+    <div>
+        <h3>Second Item</h3>
+        <input type="number" value="20.99">
+        <button>Update</button>
+    </div>
+</div>
+
+<!-- Hidden Popup -->
+<div id="popup" class="popup hidden">
+    <div class="popup-content">
+        <p>Confirm price update?</p>
+        <button id="confirm-btn">Confirm</button>
+        <button id="cancel-btn">Cancel</button>
+    </div>
+</div>
+
+<script src="store.js"></script>
+</body>
+</html>
