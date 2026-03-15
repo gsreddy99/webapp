@@ -25,11 +25,9 @@ jobs:
       - name: Install Python dependencies
         run: pip install openai requests
 
-      - name: Generate AI Playwright tests
+      - name: Generate AI Playwright tests (GitHub Models)
         env:
-          AOAI_KEY: ${{ secrets.AOAI_KEY }}
-          AOAI_ENDPOINT: ${{ secrets.AOAI_ENDPOINT }}
-          AOAI_DEPLOYMENT: ${{ secrets.AOAI_DEPLOYMENT }}
+          GITHUB_TOKEN: ${{ github.token }}
         run: |
           cd calculator-web/src
           python3 ai-generate-tests.py
