@@ -4,10 +4,6 @@ on:
   push:
   pull_request:
 
-permissions:
-  contents: read
-  id-token: write
-
 jobs:
   ai-tests:
     runs-on: ubuntu-latest
@@ -29,11 +25,12 @@ jobs:
       - name: Install Python dependencies
         run: pip install openai requests
 
-      - name: Generate AI Playwright tests (GitHub Models)
+      - name: Generate AI Playwright tests (OpenAI)
         env:
-          GITHUB_TOKEN: ${{ github.token }}
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd calculator-web/src
+          echo "OPENAI_API_KEY is set? -> ${OPENAI_API_KEY:+YES}"   # debug
           python3 ai-generate-tests.py
 
       - name: Install Playwright browsers
