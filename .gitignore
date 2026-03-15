@@ -7,3 +7,5 @@
 /calculator-web/src/bin/
 /calculator-web/src/obj/
 /calculator-web/src/test-results/
+/calculator-web/src/node_modules/
+**/node_modules/
