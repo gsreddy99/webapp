@@ -2,7 +2,6 @@ import os
 from pathlib import Path
 from openai import OpenAI
 
-# Load API key from environment
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 MODEL = "gpt-4o-mini"
 
@@ -12,11 +11,7 @@ def read_file(path):
     except FileNotFoundError:
         return ""
 
-# Read your actual HTML files (if needed later)
-signin_html = read_file("public/signin.html")
-store_html = read_file("public/store.html")
-
-prompt = f"""
+prompt = """
 You are an expert QA engineer. Generate Playwright functional tests for the following pages.
 Use ONLY selectors that exist in the HTML/JS described below.
 
@@ -45,6 +40,7 @@ TESTS TO GENERATE:
 
 REQUIREMENTS:
 - Return ONLY valid JavaScript for Playwright.
+- MUST begin with: const { test, expect } = require('@playwright/test');
 - No markdown fences.
 - Use test.describe and test blocks.
 - Use page.goto('/signin.html') and page.goto('/store.html').
@@ -62,15 +58,20 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# Strip markdown fences if the model adds them
-generated_code = generated_code.replace("```javascript", "")
-generated_code = generated_code.replace("```js", "")
-generated_code = generated_code.replace("```", "").strip()
+# Strip markdown fences safely
+for fence in ["```javascript", "```js", "```"]:
+    generated_code = generated_code.replace(fence, "")
 
-# Ensure tests directory exists
+generated_code = generated_code.strip()
+
+# Ensure import line exists at top
+IMPORT_LINE = "const { test, expect } = require('@playwright/test');"
+
+if not generated_code.startswith("const { test"):
+    generated_code = IMPORT_LINE + "\n\n" + generated_code
+
+# Write output
 Path("tests").mkdir(exist_ok=True)
-
-# Write final test file
 output_path = Path("tests/generated.spec.js")
 output_path.write_text(generated_code, encoding="utf-8")
 
