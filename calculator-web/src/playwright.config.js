@@ -4,6 +4,6 @@ module.exports = defineConfig({
   testDir: './tests',
   use: {
     baseURL: 'http://localhost:3000',
-    headless: false
+    headless: true
   }
 });
