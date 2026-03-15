@@ -2,6 +2,7 @@ import os
 from pathlib import Path
 from openai import OpenAI
 
+# Load API key from environment
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 MODEL = "gpt-4o-mini"
 
@@ -11,24 +12,43 @@ def read_file(path):
     except FileNotFoundError:
         return ""
 
+# Read your actual HTML files (if needed later)
 signin_html = read_file("public/signin.html")
 store_html = read_file("public/store.html")
 
 prompt = f"""
-You are an expert QA engineer. Generate Playwright functional tests
-for the following HTML pages. Use stable selectors and cover:
+You are an expert QA engineer. Generate Playwright functional tests for the following pages.
+Use ONLY selectors that exist in the HTML/JS described below.
 
-- Page load
-- Required fields
-- Valid and invalid inputs
-- Button clicks
-- Navigation
-- Error messages
-- Success flows
+SIGNIN PAGE STRUCTURE:
+- Two input fields have class "dynamic-field"
+- The login button has id "login-btn"
+- There is NO validation; clicking login always redirects to store.html
 
-Return ONLY valid JavaScript code for Playwright.
-Do NOT include markdown fences like ```javascript or ```.
-Just return pure JS.
+STORE PAGE STRUCTURE:
+- Items are inside #items-container > div
+- Each item has:
+  - an input for price
+  - a button that opens a popup
+- Popup has id="popup"
+- Confirm button id="confirm-btn"
+- Cancel button id="cancel-btn"
+
+TESTS TO GENERATE:
+1. Sign-in page loads
+2. User can type into both dynamic-field inputs
+3. Clicking login redirects to store.html
+4. Store page loads items
+5. Clicking Update opens popup
+6. Clicking Cancel closes popup
+7. Clicking Confirm logs price update and closes popup
+
+REQUIREMENTS:
+- Return ONLY valid JavaScript for Playwright.
+- No markdown fences.
+- Use test.describe and test blocks.
+- Use page.goto('/signin.html') and page.goto('/store.html').
+- Use stable selectors based on the structure above.
 """
 
 response = client.chat.completions.create(
@@ -42,12 +62,15 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# Strip markdown fences if model still adds them
+# Strip markdown fences if the model adds them
 generated_code = generated_code.replace("```javascript", "")
 generated_code = generated_code.replace("```js", "")
 generated_code = generated_code.replace("```", "").strip()
 
+# Ensure tests directory exists
 Path("tests").mkdir(exist_ok=True)
+
+# Write final test file
 output_path = Path("tests/generated.spec.js")
 output_path.write_text(generated_code, encoding="utf-8")
 
