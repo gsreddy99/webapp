@@ -1,17 +1,16 @@
 import os
 from pathlib import Path
-from openai import AzureOpenAI
+from openai import OpenAI
 
 # ---------------------------------------------------------
-# Azure OpenAI Client (same as your working app)
+# GitHub Models Client (no Azure needed)
 # ---------------------------------------------------------
-client = AzureOpenAI(
-    api_key=os.environ["AOAI_KEY"],
-    azure_endpoint=os.environ["AOAI_ENDPOINT"],
-    api_version="2024-12-01-preview"
+client = OpenAI(
+    base_url="https://models.inference.ai.azure.com",
+    api_key=os.environ["GITHUB_TOKEN"]
 )
 
-deployment = os.environ["AOAI_DEPLOYMENT"]
+MODEL = "gpt-4o-mini"   # Free, fast, perfect for test generation
 
 # ---------------------------------------------------------
 # Read HTML files
@@ -50,10 +49,10 @@ Return ONLY valid JavaScript code for Playwright.
 """
 
 # ---------------------------------------------------------
-# Call Azure OpenAI
+# Call GitHub Models
 # ---------------------------------------------------------
 response = client.chat.completions.create(
-    model=deployment,
+    model=MODEL,
     messages=[
         {"role": "system", "content": "You generate high-quality Playwright tests."},
         {"role": "user", "content": prompt}
