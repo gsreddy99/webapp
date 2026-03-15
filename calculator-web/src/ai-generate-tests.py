@@ -2,9 +2,11 @@ import os
 from pathlib import Path
 from openai import OpenAI
 
+# Initialize OpenAI client
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 MODEL = "gpt-4o-mini"
 
+# Prompt for generating Playwright tests
 prompt = """
 You are an expert QA engineer. Generate Playwright functional tests for the following pages.
 Use ONLY selectors that exist in the HTML/JS described below.
@@ -17,7 +19,7 @@ SIGNIN PAGE STRUCTURE:
 STORE PAGE STRUCTURE:
 - Items are inside #items-container > div
 - Each item has:
-  - an input for price
+  - an input for price (IMPORTANT: it is just <input>, no type attribute)
   - a button that opens a popup
 - Popup has id="popup"
 - Confirm button id="confirm-btn"
@@ -41,8 +43,11 @@ REQUIREMENTS:
 - Use stable selectors based on the structure above.
 - For item count, ALWAYS use: await expect(items).toHaveCount(2);
 - NEVER use toHaveCountGreaterThan or any matcher that does not exist in Playwright.
+- For the price input, ALWAYS use: locator('input')
+- NEVER use input[type="text"] or any attribute selector.
 """
 
+# Call OpenAI to generate the test file
 response = client.chat.completions.create(
     model=MODEL,
     messages=[
@@ -54,7 +59,7 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# Strip markdown fences
+# Strip markdown fences if present
 for fence in ["```javascript", "```js", "```"]:
     generated_code = generated_code.replace(fence, "")
 
@@ -65,8 +70,11 @@ IMPORT_LINE = "const { test, expect } = require('@playwright/test');"
 if not generated_code.startswith("const { test"):
     generated_code = IMPORT_LINE + "\n\n" + generated_code
 
-# Write output
+# Ensure tests directory exists
 Path("tests").mkdir(exist_ok=True)
-Path("tests/generated.spec.js").write_text(generated_code, encoding="utf-8")
+
+# Write the generated test file
+output_path = Path("tests/generated.spec.js")
+output_path.write_text(generated_code, encoding="utf-8")
 
 print("AI-generated Playwright tests written to tests/generated.spec.js")
