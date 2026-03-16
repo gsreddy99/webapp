@@ -4,7 +4,7 @@ module.exports = defineConfig({
   testDir: './tests',
 
   reporter: [
-    ['line'] // clean readable output in CI
+    ['line'] // clear output in CI
   ],
 
   use: {

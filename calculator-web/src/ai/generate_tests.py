@@ -2,11 +2,9 @@ import os
 from pathlib import Path
 from openai import OpenAI
 
-# Initialize OpenAI client
 client = OpenAI(api_key=os.environ["OPENAI_API_KEY"])
 MODEL = "gpt-4o-mini"
 
-# Prompt for generating Playwright tests
 prompt = """
 You are an expert QA engineer. Generate Playwright functional tests for the following pages.
 Use ONLY selectors that exist in the HTML/JS described below.
@@ -47,7 +45,6 @@ REQUIREMENTS:
 - NEVER use input[type="text"] or any attribute selector.
 """
 
-# Call OpenAI to generate the test file
 response = client.chat.completions.create(
     model=MODEL,
     messages=[
@@ -59,22 +56,16 @@ response = client.chat.completions.create(
 
 generated_code = response.choices[0].message.content
 
-# Strip markdown fences if present
 for fence in ["```javascript", "```js", "```"]:
     generated_code = generated_code.replace(fence, "")
 
 generated_code = generated_code.strip()
 
-# Ensure import line exists
 IMPORT_LINE = "const { test, expect } = require('@playwright/test');"
 if not generated_code.startswith("const { test"):
     generated_code = IMPORT_LINE + "\n\n" + generated_code
 
-# Ensure tests directory exists
 Path("tests").mkdir(exist_ok=True)
-
-# Write the generated test file
-output_path = Path("tests/generated.spec.js")
-output_path.write_text(generated_code, encoding="utf-8")
+Path("tests/generated.spec.js").write_text(generated_code, encoding="utf-8")
 
 print("AI-generated Playwright tests written to tests/generated.spec.js")

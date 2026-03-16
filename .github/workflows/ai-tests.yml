@@ -42,9 +42,25 @@ jobs:
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
         run: |
           cd calculator-web/src
-          python3 ai-generate-tests.py
+          python3 ai/generate_tests.py
 
       - name: Run Playwright Tests
         run: |
           cd calculator-web/src
-          npx playwright test
+          npx playwright test | tee playwright-output.log
+
+      - name: Analyze failures with AI
+        if: failure()
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd calculator-web/src
+          python3 ai/analyze_failure.py
+
+      - name: Auto-fix failing test with AI
+        if: failure()
+        env:
+          OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+        run: |
+          cd calculator-web/src
+          python3 ai/fix_failed_test.py
